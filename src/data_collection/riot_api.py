@@ -262,7 +262,7 @@ class RiotAPI:
     # ==================== MATCH ENDPOINTS ====================
     
     def get_match_ids(self, puuid: str, start: int = 0, count: int = 20,
-                     queue: Optional[int] = None, type: Optional[str] = None) -> List[str]:
+                     queue: Optional[int] = None, type: Optional[int] = None) -> List[str]:
         """
         Get list of match IDs for a summoner.
         
@@ -271,7 +271,7 @@ class RiotAPI:
             start: Start index (for pagination)
             count: Number of matches to return (max 100)
             queue: Queue ID filter (420 = ranked solo, 440 = ranked flex)
-            type: Match type filter ('ranked', 'normal', 'tourney', 'tutorial')
+            type: Match type filter (integer value)
             
         Returns:
             List of match IDs
@@ -285,11 +285,14 @@ class RiotAPI:
         
         if queue:
             params['queue'] = queue
-        if type:
+        if type is not None:
             params['type'] = type
         
         logger.info(f"Fetching match IDs for PUUID: {puuid[:8]}... (start={start}, count={count})")
-        return self._make_request(url, params)
+        result = self._make_request(url, params)
+        if not isinstance(result, list):
+            raise RiotAPIError(f"Expected a list of match IDs, got: {__builtins__.type(result)}")
+        return result
     
     def get_match(self, match_id: str) -> Dict[str, Any]:
         """
@@ -331,7 +334,16 @@ class RiotAPI:
             List of ranked entries (one per queue type)
         """
         url = f"{self.platform_url}/lol/league/v4/entries/by-summoner/{summoner_id}"
-        return self._make_request(url)
+        result = self._make_request(url)
+        if isinstance(result, list):
+            return result
+        elif isinstance(result, dict):
+            # If the API returns a dict (e.g., error), return an empty list or handle as needed
+            logger.warning(f"Expected a list for ranked entries, got dict: {result}")
+            return []
+        else:
+            logger.warning(f"Unexpected response type for ranked entries: {type(result)}")
+            return []
     
     def get_challenger_league(self, queue: str = 'RANKED_SOLO_5x5') -> Dict[str, Any]:
         """
@@ -387,8 +399,8 @@ class RiotAPI:
             True if connection successful, False otherwise
         """
         try:
-            # Try to get a well-known summoner
-            self.get_summoner_by_name("Doublelift")
+            # Try to get a well-known account using Riot ID
+            self.get_account_by_riot_id("Doublelift", "NA1")
             logger.info("✅ API connection test successful")
             return True
         except RiotAPIError as e:
@@ -422,26 +434,21 @@ if __name__ == "__main__":
     print(f"🔧 Initializing Riot API for region: {region}")
     api = RiotAPI(api_key=api_key, region=region)
     
-    # Test connection
-    print("\n🧪 Testing API connection...")
-    if api.test_connection():
-        print("✅ Connection successful!\n")
-    else:
-        print("❌ Connection failed!")
-        exit(1)
-    
-    # Example 1: Get summoner info
-    summoner_name = "Doublelift"
-    print(f"📊 Fetching summoner: {summoner_name}")
+    # Example 1: Get account by Riot ID
+    print("\n📊 Fetching account: Doublelift#NA1")
     try:
-        summoner = api.get_summoner_by_name(summoner_name)
-        print(f"   Name: {summoner['name']}")
+        account = api.get_account_by_riot_id("Doublelift", "NA1")
+        print(f"   Account: {account['gameName']}#{account['tagLine']}")
+        print(f"   PUUID: {account['puuid'][:20]}...")
+        
+        # Get summoner details
+        print(f"\n🔍 Fetching summoner details...")
+        summoner = api.get_summoner_by_puuid(account['puuid'])
         print(f"   Level: {summoner['summonerLevel']}")
-        print(f"   PUUID: {summoner['puuid'][:20]}...")
         
         # Example 2: Get recent matches
         print(f"\n📜 Fetching last 5 matches...")
-        match_ids = api.get_match_ids(summoner['puuid'], count=5)
+        match_ids = api.get_match_ids(account['puuid'], count=5)
         print(f"   Found {len(match_ids)} matches")
         
         # Example 3: Get detailed match info

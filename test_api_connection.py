@@ -94,6 +94,10 @@ def test_api_connection():
         
         api_key = os.getenv('RIOT_API_KEY')
         region = os.getenv('RIOT_REGION', 'na1')
+
+        if not api_key:
+            print("   ❌ RIOT_API_KEY is not set. Please check your .env file.")
+            return False
         
         api = RiotAPI(api_key=api_key, region=region)
         
