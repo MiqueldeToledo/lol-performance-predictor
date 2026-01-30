@@ -181,9 +181,15 @@ class RiotAPI:
                     raise RiotAPIError(f"Resource not found: {url}")
                 
                 elif response.status_code == 403:
-                    logger.error(f"403 Forbidden. Response: {response.text}")
-                    logger.error(f"Request URL: {url}")
-                    logger.error(f"API Key (first 10 chars): {self.api_key[:10]}")
+                    logger.error(
+                        "API request failed: Invalid API key or forbidden access",
+                        extra={
+                            'url': url,
+                            'api_key': self.api_key[:10],
+                            'status_code': response.status_code,
+                            'response': response.text
+                        }
+                    )
                     raise RiotAPIError(f"Invalid API key or forbidden access. Response: {response.text}")
                 
                 elif response.status_code == 429:
