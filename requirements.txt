@@ -1,0 +1,31 @@
+numpy>=1.21.0           # Array operations, numerical computing
+pandas>=1.3.0           # DataFrames, data manipulation (your best friend!)
+scikit-learn>=1.0.0     # ML models, preprocessing, evaluation
+
+xgboost>=1.5.0          # Best gradient boosting (usually wins competitions)
+lightgbm>=3.3.0         # Fast gradient boosting (alternative to XGBoost)
+
+requests>=2.26.0        # Make HTTP requests to Riot API
+ratelimit>=2.2.1        # Prevent exceeding API rate limits
+
+matplotlib>=3.4.0       # Basic plotting
+seaborn>=0.11.0         # Statistical visualizations (built on matplotlib)
+plotly>=5.3.0           # Interactive charts
+
+fastapi>=0.68.0         # Modern web framework for APIs
+uvicorn>=0.15.0         # ASGI server to run FastAPI
+pydantic>=1.8.0         # Data validation
+
+python-dotenv>=0.19.0   # Load .env files (for your API key)
+
+jupyterlab>=3.1.0       # Modern notebook interface
+ipykernel>=6.4.0        # Jupyter kernel for Python
+
+pytest>=6.2.0           # Testing framework
+pytest-cov>=2.12.0      # Test coverage reports
+
+black>=21.9b0           # Code formatter (makes code pretty)
+flake8>=3.9.0           # Linting (catches errors)
+
+tqdm>=4.62.0            # Progress bars (see loops progress)
+joblib>=1.1.0           # Save/load models efficiently
